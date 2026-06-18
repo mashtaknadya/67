@@ -1,0 +1,40 @@
+/*Коллега написал функцию, которая должна дописывать строку в конец файла. Найдите минимум 3 ошибки в этом коде и предложите исправления:
+void append_to_file(char *filename, char *text) {
+    int fd;
+    fd = open(filename, O_WRONLY | O_CREAT);
+    write(fd, text, strlen(text));
+    close(fd);
+}*/
+
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+
+int append_to_file(const char *filename, const char *text) {
+    if (filename == NULL || text == NULL) {
+        return -1;
+    }
+
+    // открываем файл с флагом O_APPEND и правами 0644
+    int fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd < 0) {
+        return -1;
+    }
+
+    // записываем строку
+    ssize_t bytes_to_write = strlen(text);
+    ssize_t bytes_written = write(fd, text, bytes_to_write);
+    
+    // проверяем что записано всё
+    int result = 0;
+    if (bytes_written != bytes_to_write) {
+        result = -1;
+    }
+
+    // закрываем файл и проверяем ошибку
+    if (close(fd) < 0) {
+        result = -1;
+    }
+
+    return result;
+}
